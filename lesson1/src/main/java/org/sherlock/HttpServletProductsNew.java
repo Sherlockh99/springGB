@@ -13,8 +13,8 @@ import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@WebServlet(urlPatterns = "/http_servlet_fruits/*")
-public class HttpServletProducts extends HttpServlet {
+@WebServlet(urlPatterns = "/http_servlet_products_new/*")
+public class HttpServletProductsNew extends HttpServlet {
     private ProductRepository productRepository;
 
     private static final Pattern PARAM_PATTERN = Pattern.compile("\\/(\\d+)");
@@ -27,31 +27,22 @@ public class HttpServletProducts extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         //initProductRepository();
-
-        if(req.getPathInfo()==null || req.getPathInfo().equals("/")){
-            PrintWriter wr = resp.getWriter();
-            wr.println("<table>");
-            wr.println("<tr>");
-            wr.println("<th>Id</th>");
-            wr.println("<th>ProductName</th>");
-            wr.println("<th>Cost</th>");
-            wr.println("</tr>");
-            for(Product product : productRepository.findAll()){
-                outWrInfo(wr, product);
-            }
-            wr.println("</table>");
-        } else{
+        if(req.getPathInfo()==null || req.getPathInfo().equals("/")) {
+            req.setAttribute("products",productRepository.findAll());
+            getServletContext().getRequestDispatcher("/product.jsp").forward(req,resp);
+        }else {
             Matcher matcher = PARAM_PATTERN.matcher(req.getPathInfo());
             if(matcher.matches()){
-                long idProduct = Long.parseLong(matcher.group(1));
-                Product product = productRepository.findById(idProduct);
+                long id = Long.parseLong(matcher.group(1));
+                Product product = productRepository.findById(id);
                 if(product == null){
                     resp.getWriter().println("Product not found");
                     resp.setStatus(404);
                     return;
                 }
-                resp.getWriter().println("<p>Id: " + product.getId() + "</p>");
-                resp.getWriter().println("<p>Product: " + product.getProductName() + "</p>");
+                req.setAttribute("product",product);
+                req.setAttribute("contentPath",req.getContextPath());
+                getServletContext().getRequestDispatcher("/product_form.jsp").forward(req,resp); //для дальнейшей обработки перекинь на user_form.jsp
             }else{
                 resp.getWriter().println("Bad parameter value");
                 resp.setStatus(400);
