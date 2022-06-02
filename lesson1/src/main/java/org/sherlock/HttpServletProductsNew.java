@@ -48,39 +48,6 @@ public class HttpServletProductsNew extends HttpServlet {
                 resp.setStatus(400);
             }
         }
-        /*
-
-        if(req.getPathInfo()==null || req.getPathInfo().equals("/")){
-            PrintWriter wr = resp.getWriter();
-            wr.println("<table>");
-            wr.println("<tr>");
-            wr.println("<th>Id</th>");
-            wr.println("<th>ProductName</th>");
-            wr.println("<th>Cost</th>");
-            wr.println("</tr>");
-            for(Product product : productRepository.findAll()){
-                outWrInfo(wr, product);
-            }
-            wr.println("</table>");
-        } else{
-            Matcher matcher = PARAM_PATTERN.matcher(req.getPathInfo());
-            if(matcher.matches()){
-                long idProduct = Long.parseLong(matcher.group(1));
-                Product product = productRepository.findById(idProduct);
-                if(product == null){
-                    resp.getWriter().println("Product not found");
-                    resp.setStatus(404);
-                    return;
-                }
-                resp.getWriter().println("<p>Id: " + product.getId() + "</p>");
-                resp.getWriter().println("<p>Product: " + product.getProductName() + "</p>");
-            }else{
-                resp.getWriter().println("Bad parameter value");
-                resp.setStatus(400);
-            }
-        }
-
-         */
     }
 
     private void outWrInfo(PrintWriter wr, Product product){
