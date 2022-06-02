@@ -10,10 +10,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @WebServlet(urlPatterns = "/http_servlet_fruits/*")
 public class HttpServletProducts extends HttpServlet {
     private ProductRepository productRepository;
+
+    private static final Pattern PARAM_PATTERN = Pattern.compile("\\/(\\d+)");
 
     @Override
     public void init() throws ServletException {
@@ -23,25 +27,37 @@ public class HttpServletProducts extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         //initProductRepository();
-        PrintWriter wr = resp.getWriter();
-        wr.println("<table>");
-        wr.println("<tr>");
-        wr.println("<th>Id</th>");
-        wr.println("<th>ProductName</th>");
-        wr.println("<th>Cost</th>");
-        wr.println("</tr>");
+
 
         if(req.getPathInfo()==null || req.getPathInfo().equals("/")){
+            PrintWriter wr = resp.getWriter();
+            wr.println("<table>");
+            wr.println("<tr>");
+            wr.println("<th>Id</th>");
+            wr.println("<th>ProductName</th>");
+            wr.println("<th>Cost</th>");
+            wr.println("</tr>");
             for(Product product : productRepository.findAll()){
                 outWrInfo(wr, product);
             }
+            wr.println("</table>");
         } else{
-            String pathInfo = req.getPathInfo().substring(1);
-            int idFruit =  Integer.parseInt(pathInfo);
-            Product product = productRepository.findById(idFruit);
-            outWrInfo(wr, product);
+            Matcher matcher = PARAM_PATTERN.matcher(req.getPathInfo());
+            if(matcher.matches()){
+                long idProduct = Long.parseLong(matcher.group(1));
+                Product product = productRepository.findById(idProduct);
+                if(product == null){
+                    resp.getWriter().println("Product not found");
+                    resp.setStatus(404);
+                    return;
+                }
+                resp.getWriter().println("<p>Id: " + product.getId() + "</p>");
+                resp.getWriter().println("<p>Product: " + product.getProductName() + "</p>");
+            }else{
+                resp.getWriter().println("Bad parameter value");
+                resp.setStatus(400);
+            }
         }
-        wr.println("</table>");
     }
 
     private void outWrInfo(PrintWriter wr, Product product){
